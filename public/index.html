@@ -1,89 +1,865 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Math Study Site</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    input[type="text"] {
-      width: 400px;
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      outline: none;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background: #00aaff;
-      color: white;
-    }
-    iframe {
-      width: 90vw;
-      height: 70vh;
-      margin-top: 20px;
-      border: none;
-      border-radius: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebProxy</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial, sans-serif;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header, footer, .toolbar {
+  background: #191919;
+}
+
+header {
+  padding: 14px 18px;
+  border-bottom: 1px solid #303030;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.status {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  background: #292929;
+  border: 1px solid #414141;
+  color: white;
+  padding: 10px 13px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #414141;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+#go, #start {
+  background: #008be8;
+  border-color: #008be8;
+}
+
+#address {
+  flex: 1;
+  min-width: 120px;
+  background: #101010;
+  border: 1px solid #444;
+  border-radius: 5px;
+  padding: 11px;
+  color: white;
+  outline: none;
+}
+
+#browser {
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#screen {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 5px;
+  object-fit: contain;
+  touch-action: none;
+}
+
+#overlay {
+  position: absolute;
+  inset: 10px;
+  z-index: 2;
+  background: #151515;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+#overlay h2 {
+  margin-bottom: 8px;
+}
+
+#overlay p {
+  color: #aaa;
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#startUrl {
+  width: min(400px, 95%);
+  padding: 12px;
+  margin: 12px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: white;
+  font-size: 15px;
+}
+
+#message {
+  color: #ff7777;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+footer {
+  padding: 10px 15px;
+  color: #999;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media(max-width: 600px) {
+  .toolbar {
+    gap: 5px;
+  }
+
+  #address {
+    flex-basis: 100%;
+    order: -1;
+  }
+
+  button {
+    padding: 9px 10px;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+}
+</style>
 </head>
+
 <body>
-  <h1>Math Study Site</h1>
 
-  <form onsubmit="openInIframe(event)">
+<header>
+  <div class="brand">WebProxy</div>
+  <div class="status" id="status">Ready</div>
+</header>
+
+<div class="toolbar">
+
+  <button id="back">←</button>
+  <button id="forward">→</button>
+  <button id="reload">↻</button>
+  <button id="stop">✕</button>
+
+  <input
+    id="address"
+    placeholder="Enter a website URL"
+    autocomplete="url"
+  >
+
+  <button id="go">Go</button>
+  <button id="reconnect">Reconnect</button>
+  <button id="fullscreen">⛶</button>
+  <button id="disconnect">Close</button>
+
+</div>
+
+<main id="browser">
+
+  <canvas
+    id="screen"
+    width="1280"
+    height="800"
+  ></canvas>
+
+  <div id="overlay">
+
+    <h2>WebProxy</h2>
+
+    <p>
+      Browse websites through a remote browser.
+      Enter a website below to get started.
+    </p>
+
     <input
+      id="startUrl"
       type="text"
-      id="urlInput"
       placeholder="Enter a website URL"
-      autocomplete="on"
-      value="https://"
-    />
-    <button type="submit">Go</button>
-  </form>
+      value="https://example.com"
+    >
 
-  <iframe id="proxyFrame" src="" hidden></iframe>
+    <button id="start">Start browsing</button>
 
-  <script>
-    function openInIframe(e) {
-      e.preventDefault();
-      const input = document.getElementById('urlInput');
-      const iframe = document.getElementById('proxyFrame');
+    <div id="message"></div>
 
-      const rawUrl = input.value.trim();
+  </div>
 
-      if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-        alert('Please enter a full URL starting with http:// or https://');
+</main>
+
+<footer>
+  <span id="connection">Ready to browse</span>
+  <span>Server-powered browser</span>
+</footer>
+
+<script>
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+const WIDTH = 1280;
+const HEIGHT = 800;
+
+let socket = null;
+let sessionId = null;
+
+let connected = false;
+let connecting = false;
+let manuallyClosed = false;
+
+let heartbeatTimer = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+
+let rendering = false;
+let pendingFrame = null;
+
+let lastMoveTime = 0;
+let pendingMove = null;
+let moveTimer = null;
+
+const MOVE_INTERVAL = 35;
+
+function status(value) {
+  $('status').textContent = value;
+  $('connection').textContent = value;
+}
+
+function message(value) {
+  $('message').textContent = value;
+}
+
+function clearScreen() {
+  const ctx = $('screen').getContext('2d');
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+}
+
+function normalizeURL(value) {
+  value = value.trim();
+
+  if (!value) return null;
+
+  if (!/^https?:\/\//i.test(value)) {
+    value = 'https://' + value;
+  }
+
+  try {
+    const url = new URL(value);
+
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return null;
+    }
+
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+function send(data) {
+  if (
+    socket &&
+    socket.readyState === WebSocket.OPEN
+  ) {
+    socket.send(JSON.stringify(data));
+    return true;
+  }
+
+  return false;
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
+}
+
+function startHeartbeat() {
+  stopHeartbeat();
+
+  heartbeatTimer = setInterval(() => {
+    send({
+      action: 'heartbeat'
+    });
+  }, 5000);
+}
+
+function stopReconnect() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+}
+
+async function renderFrame(blob) {
+  pendingFrame = blob;
+
+  if (rendering) return;
+
+  rendering = true;
+
+  try {
+    while (pendingFrame) {
+      const current = pendingFrame;
+      pendingFrame = null;
+
+      let bitmap;
+
+      try {
+        bitmap = await createImageBitmap(current);
+
+        if (!connected) continue;
+
+        const canvas = $('screen');
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(
+          bitmap,
+          0,
+          0,
+          WIDTH,
+          HEIGHT
+        );
+
+      } catch (error) {
+        console.error('Frame decode error:', error);
+      } finally {
+        if (bitmap) bitmap.close();
+      }
+    }
+  } finally {
+    rendering = false;
+
+    if (pendingFrame) {
+      renderFrame(pendingFrame);
+    }
+  }
+}
+
+async function startBrowser() {
+  if (connecting || connected) return;
+
+  const target = normalizeURL($('startUrl').value);
+
+  if (!target) {
+    message('Please enter a valid website URL.');
+    return;
+  }
+
+  manuallyClosed = false;
+  connecting = true;
+
+  $('start').disabled = true;
+
+  status('Starting browser...');
+  message('Please wait...');
+
+  try {
+    const response = await fetch('/api/session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: target
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Could not start browser');
+    }
+
+    sessionId = result.id;
+
+    $('address').value = result.url;
+
+    reconnectAttempts = 0;
+
+    connectStream();
+
+  } catch (error) {
+    connecting = false;
+    $('start').disabled = false;
+
+    status('Ready');
+    message(error.message);
+  }
+}
+
+function connectStream() {
+  if (
+    !sessionId ||
+    connected ||
+    !connecting ||
+    manuallyClosed
+  ) return;
+
+  stopReconnect();
+
+  status('Connecting...');
+
+  const protocol =
+    location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+  const ws = new WebSocket(
+    protocol + '//' + location.host +
+    '/stream?session=' + encodeURIComponent(sessionId)
+  );
+
+  socket = ws;
+  ws.binaryType = 'blob';
+
+  ws.onopen = () => {
+    if (socket !== ws) return;
+
+    connected = true;
+    connecting = false;
+    reconnectAttempts = 0;
+
+    $('overlay').classList.add('hidden');
+    $('start').disabled = false;
+
+    status('Connected');
+    message('');
+
+    startHeartbeat();
+  };
+
+  ws.onmessage = event => {
+    if (socket !== ws) return;
+
+    if (typeof event.data === 'string') {
+      try {
+        const result = JSON.parse(event.data);
+
+        if (result.type === 'error') {
+          message(result.message);
+        }
+      } catch {}
+
+      return;
+    }
+
+    renderFrame(event.data);
+  };
+
+  ws.onerror = () => {
+    if (socket === ws) {
+      status('Connection interrupted');
+    }
+  };
+
+  ws.onclose = () => {
+    if (socket !== ws) return;
+
+    stopHeartbeat();
+
+    connected = false;
+    connecting = false;
+    socket = null;
+
+    if (manuallyClosed) return;
+
+    status('Connection lost');
+    message('Reconnecting...');
+
+    scheduleReconnect();
+  };
+}
+
+function scheduleReconnect() {
+  if (
+    manuallyClosed ||
+    !sessionId ||
+    reconnectTimer
+  ) return;
+
+  reconnectAttempts++;
+
+  const delay = Math.min(
+    1000 * Math.pow(1.5, reconnectAttempts - 1),
+    10000
+  );
+
+  status('Reconnecting...');
+
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+
+    if (manuallyClosed || !sessionId) return;
+
+    try {
+      const response = await fetch(
+        '/api/session/' + encodeURIComponent(sessionId),
+        { cache: 'no-store' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Session expired');
+      }
+
+      const result = await response.json();
+
+      $('address').value = result.url;
+
+      connecting = true;
+
+      connectStream();
+
+    } catch (error) {
+      if (error.message === 'Session expired') {
+        sessionId = null;
+        connecting = false;
+
+        status('Session expired');
+
+        message('Please start a new browser.');
+
+        $('overlay').classList.remove('hidden');
+        $('start').disabled = false;
+
         return;
       }
 
-      const encoded = encodeURIComponent(rawUrl);
-      iframe.src = `/proxy?url=${encoded}`;
-      iframe.hidden = false;
+      scheduleReconnect();
     }
-  </script>
+  }, delay);
+}
+
+async function reconnect() {
+  if (!sessionId || connected || connecting) return;
+
+  stopReconnect();
+
+  connecting = true;
+
+  status('Checking browser...');
+
+  try {
+    const response = await fetch(
+      '/api/session/' + encodeURIComponent(sessionId),
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      throw new Error('Session expired. Start a new browser.');
+    }
+
+    const result = await response.json();
+
+    $('address').value = result.url;
+
+    connectStream();
+
+  } catch (error) {
+    connecting = false;
+
+    status('Disconnected');
+    message(error.message);
+  }
+}
+
+function navigate() {
+  const target = normalizeURL($('address').value);
+
+  if (!target) {
+    message('Invalid website URL');
+    return;
+  }
+
+  $('address').value = target;
+
+  send({
+    action: 'navigate',
+    url: target
+  });
+}
+
+$('start').onclick = startBrowser;
+$('go').onclick = navigate;
+$('reconnect').onclick = reconnect;
+
+$('startUrl').addEventListener('keydown', event => {
+  if (event.key === 'Enter') startBrowser();
+});
+
+$('address').addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    navigate();
+    $('address').blur();
+  }
+});
+
+$('back').onclick = () => send({ action: 'back' });
+$('forward').onclick = () => send({ action: 'forward' });
+$('reload').onclick = () => send({ action: 'reload' });
+$('stop').onclick = () => send({ action: 'stop' });
+
+function getPosition(event) {
+  const canvas = $('screen');
+  const rect = canvas.getBoundingClientRect();
+
+  const scale = Math.min(
+    rect.width / WIDTH,
+    rect.height / HEIGHT
+  );
+
+  const renderedWidth = WIDTH * scale;
+  const renderedHeight = HEIGHT * scale;
+
+  const left = rect.left +
+    (rect.width - renderedWidth) / 2;
+
+  const top = rect.top +
+    (rect.height - renderedHeight) / 2;
+
+  return {
+    x: Math.max(0, Math.min(
+      WIDTH,
+      (event.clientX - left) / scale
+    )),
+    y: Math.max(0, Math.min(
+      HEIGHT,
+      (event.clientY - top) / scale
+    ))
+  };
+}
+
+function getButton(button) {
+  return ['left', 'middle', 'right'][button] || 'left';
+}
+
+function sendMove(position) {
+  const now = performance.now();
+
+  if (now - lastMoveTime >= MOVE_INTERVAL) {
+    lastMoveTime = now;
+
+    send({
+      action: 'move',
+      ...position
+    });
+
+    return;
+  }
+
+  pendingMove = position;
+
+  if (!moveTimer) {
+    moveTimer = setTimeout(() => {
+      moveTimer = null;
+
+      if (!pendingMove) return;
+
+      const position = pendingMove;
+      pendingMove = null;
+
+      lastMoveTime = performance.now();
+
+      send({
+        action: 'move',
+        ...position
+      });
+
+    }, MOVE_INTERVAL);
+  }
+}
+
+$('screen').addEventListener('pointerdown', event => {
+  if (!connected) return;
+
+  event.preventDefault();
+
+  $('screen').setPointerCapture(event.pointerId);
+
+  send({
+    action: 'down',
+    button: getButton(event.button),
+    ...getPosition(event)
+  });
+});
+
+$('screen').addEventListener('pointerup', event => {
+  if (!connected) return;
+
+  event.preventDefault();
+
+  send({
+    action: 'up',
+    button: getButton(event.button)
+  });
+});
+
+$('screen').addEventListener('pointermove', event => {
+  if (!connected) return;
+
+  sendMove(getPosition(event));
+});
+
+$('screen').addEventListener('contextmenu', event => {
+  event.preventDefault();
+});
+
+$('screen').addEventListener('wheel', event => {
+  if (!connected) return;
+
+  event.preventDefault();
+
+  send({
+    action: 'scroll',
+    deltaX: Math.max(-1000, Math.min(1000, event.deltaX)),
+    deltaY: Math.max(-1000, Math.min(1000, event.deltaY))
+  });
+}, { passive: false });
+
+document.addEventListener('keydown', event => {
+  if (!connected) return;
+
+  if (
+    document.activeElement === $('address') ||
+    document.activeElement === $('startUrl')
+  ) return;
+
+  if (event.ctrlKey || event.metaKey) {
+    const modifier = event.metaKey ? 'Meta' : 'Control';
+    const key = event.key.toUpperCase();
+
+    if (['A', 'C', 'V', 'X', 'Z'].includes(key)) {
+      send({
+        action: 'key',
+        key: modifier + '+' + key
+      });
+
+      event.preventDefault();
+    }
+
+    return;
+  }
+
+  if (event.altKey) return;
+
+  if (event.key.length === 1) {
+    send({
+      action: 'type',
+      text: event.key
+    });
+  } else {
+    send({
+      action: 'key',
+      key: event.key === ' ' ? 'Space' : event.key
+    });
+  }
+
+  event.preventDefault();
+});
+
+$('fullscreen').onclick = async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await $('browser').requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch {}
+};
+
+$('disconnect').onclick = async () => {
+  manuallyClosed = true;
+
+  stopHeartbeat();
+  stopReconnect();
+
+  clearTimeout(moveTimer);
+  pendingMove = null;
+
+  const id = sessionId;
+
+  sessionId = null;
+  connected = false;
+  connecting = false;
+
+  if (socket) {
+    const oldSocket = socket;
+
+    socket = null;
+    oldSocket.close();
+  }
+
+  if (id) {
+    await fetch(
+      '/api/session/' + encodeURIComponent(id),
+      { method: 'DELETE' }
+    ).catch(() => {});
+  }
+
+  pendingFrame = null;
+
+  clearScreen();
+
+  $('overlay').classList.remove('hidden');
+  $('start').disabled = false;
+
+  status('Ready');
+
+  message('Enter a website to start browsing.');
+};
+
+clearScreen();
+status('Ready');
+
+</script>
 </body>
 </html>
