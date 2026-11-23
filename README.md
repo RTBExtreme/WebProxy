@@ -2,7 +2,7 @@
 
 Browse websites without any restrictions using just one webpage (easy to setup)
 
-Demo at: https://rtbextreme.net/math-study-vpn/index.html
+Demo at: https://rtbextreme.net/webproxy/index.html
 
 Change "const PORT = 443;" to change port
 
