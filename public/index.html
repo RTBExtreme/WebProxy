@@ -2,40 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>rtbextreme.net</title>
-  <link rel="icon" href="icon.png" type="image/x-icon">
+  <title>Math Study Site</title>
   <style>
-    .centered-container {
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
       display: flex;
-      justify-content: center;  
-      align-items: center;      
-      height: 100vh;            
-      background-color: black;  
-      color: white;            
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .hide {
-      visibility: hidden;
-     }
-     
-	 button {
-      background-color: green;
+    h1 {
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type="text"] {
+      width: 400px;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #00aaff;
       color: white;
+    }
+    iframe {
+      width: 90vw;
+      height: 70vh;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="centered-container">
-    <div>
-      <img src="logo.png" alt="Description of image" width="230" height="70">
-      <p>All of my tools can be found here</p>
-	  <p> <span class="hide">|</span></p>
-	  <h1> <span class="hide">|||||||||</span>Tools</h1>
-	  <button onclick="window.location.href='./math-study-vpn/index.html'">Math Study VPN</button>
-	  <button onclick="window.location.href='https://github.com/RTBExtreme/math-study-vpn'">Math Study VPN (GitHub)</button>
-	  <p> <span class="hide">|</span></p>
-	  <button onclick="window.location.href='./chrome-tab-customizer/index.html'">Chrome TAB Customizer</button>
-	  <button onclick="alert("NOT RELEASED!");">Usage Guide</button>
-	</div>
-  </div>
+  <h1>Math Study Site</h1>
+
+  <form onsubmit="openInIframe(event)">
+    <input
+      type="text"
+      id="urlInput"
+      placeholder="Enter a website URL"
+      autocomplete="on"
+      value="https://"
+    />
+    <button type="submit">Go</button>
+  </form>
+
+  <iframe id="proxyFrame" src="" hidden></iframe>
+
+  <script>
+    function openInIframe(e) {
+      e.preventDefault();
+      const input = document.getElementById('urlInput');
+      const iframe = document.getElementById('proxyFrame');
+
+      const rawUrl = input.value.trim();
+
+      if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+        alert('Please enter a full URL starting with http:// or https://');
+        return;
+      }
+
+      const encoded = encodeURIComponent(rawUrl);
+      iframe.src = `/proxy?url=${encoded}`;
+      iframe.hidden = false;
+    }
+  </script>
 </body>
 </html>
