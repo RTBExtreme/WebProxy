@@ -1,21 +1,24 @@
-# Math Study VPN
-Meant to be a VPN to bypass restrictions. Super easy to use yourself and easy to redistribute and reuse.
+# WebProxy
+
+Browse websites without any restrictions using just one webpage (easy to setup)
 
 Demo at: https://rtbextreme.net/math-study-vpn/index.html
 
 Change "const PORT = 443;" to change port
 
-How to run a Math Study VPN server:
+How to run a WebProxy server:
 
 Run these commands
 
-git clone https://github.com/RTBExtreme/math-study-vpn.git
+git clone https://github.com/RTBExtreme/WebProxy.git
 
 npm init -y
 
 npm install express url fs compression https
 
 node proxy-server.js
+
+Also change the public/private keys they are public and for testing only!
 
 or run for no HTTPS
 
